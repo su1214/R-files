@@ -1,0 +1,339 @@
+---
+title: "Ch.14 Homework 2017121179 Seunghwan Kim"
+output:
+  html_document: 
+    df_print: paged
+  word_document: default
+  html_notebook: default
+---
+
+## 1. Question 0
+
+```{r}
+plot(trees$Height, trees$Volume)
+q0_1<-lm(trees$Volume ~ trees$Height)
+summary(q0_1)
+
+q0_1_b1<-sum(((trees$Height-mean(trees$Height))*(trees$Volume-mean(trees$Volume))))/sum((trees$Height-mean(trees$Height))^2)
+q0_1_b0<-mean(trees$Volume)-q0_1_b1*mean(trees$Height)
+q0_1_b1
+q0_1_b0
+q0_1_Rsq<-sum((q0_1_b0+q0_1_b1*trees$Height-mean(trees$Volume))^2)/sum((trees$Volume-mean(trees$Volume))^2)
+q0_1_Rsq
+
+
+plot(trees$Girth, trees$Volume)
+q0_2<-lm(trees$Volume~trees$Girth)
+summary(q0_2)
+
+q0_2_b1<-sum(((trees$Girth-mean(trees$Girth))*(trees$Volume-mean(trees$Volume))))/sum((trees$Girth-mean(trees$Girth))^2)
+q0_2_b0<-mean(trees$Volume)-q0_2_b1*mean(trees$Girth)
+q0_2_b1
+q0_2_b0
+q0_2_Rsq<-sum((q0_2_b0+q0_2_b1*trees$Girth-mean(trees$Volume))^2)/sum((trees$Volume-mean(trees$Volume))^2)
+q0_2_Rsq
+
+
+```
+It seems that there are linear relationships between Height and Volume and between Girth and Volume, respectively.
+Model using Height as X variable: Yhat = -87.1236+1.5433X. R-squared: 0.3579.
+Model using Girth as X variable: Yhat = -36.9435+5.0659X. R-squared: 0.9331.
+Since the R-sqaured value of the model using Girth as X variable is larger than the one using Height as X variable, I choose the former as the better model.
+
+
+## 2. Question 7
+
+```{r}
+q7<-matrix(c(88.63, 11.46, 84.44, 13.70), nrow=2, ncol=2, byrow=F, dimnames=list(c("sample mean", "standard error"), c("midterm", "final")))
+q7
+
+q7_1<-matrix(c(1,60,61,11460.9-1236.1,1236.1,11460.9,(11460.9-1236.1)/1, 1236.1/60, 0, ((11460.9-1236.1)/1)/(1236.1/60), 0, 0), nrow=3, ncol=4, byrow=F, dimnames=list(c("Regression", "Error", "Sum"), c("df", "Sum of Squared", "Mean Square", "F value")))
+q7_1
+
+```
+
+a. as above.
+
+```{r}
+q7_Rsq<-10224.8/11460.9 #R-squared
+q7_Rsq
+```
+b. R squared = SSR/SST, 0.8921. 89.21% of the variance of final scores is explained by the midterm scores in this linear regression model.
+
+```{r}
+qf(.95, df1=1, df2=60) #critical value
+```
+
+c. H0: β1=0, H1: β1≠0.  
+under the null hypothesis, MSR/MSE follows the F distribution with degrees of freedom of 1 and 60.  
+F-value=496.31>4.00=critical value, Reject the null hypothesis. This model is statistically siginificant on 0.05 level.
+
+```{r}
+sqrt(q7_Rsq) #correlation coefficient, square root of R squared.
+```
+d. correlation coefficient r = square root of R squared. (Since it is a simple linear regression). 0.9445
+
+```{r}
+q7_MSE<-1236.1/60
+sqrt(q7_MSE) #sqrt(MSE)
+```
+e. standard deviation of error is estimated as squared root of MSE. The value is 4.539.
+
+```{r}
+q7_b1<-sqrt(q7_Rsq)*(13.70/11.46) #slope
+q7_b1
+q7_b0<-84.44-q7_b1*88.63 #intercept
+q7_b0
+```
+f. slope: Sxy/Sxx = rxy*(sy/sx). 1.129. intercept: ybar-b1xbar. -15.637
+
+```{r}
+q7_b1_se<-sqrt(q7_MSE/(11.46^2*61)) #square root of MSE/Sxx
+q7_b1_se
+q7_b1/q7_b1_se #t-statistics
+qt(.975, 60) #critical value 
+(q7_b1/q7_b1_se)^2
+```
+g. the standard error of the slope is square root of MSE/Sxx. Sxx=(n-1)*Sx. se(b1)=0.1717.  
+H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 60.  
+t-statistic=22.26652>2.000298=critical value. Reject the null hypothesis. X has statistically significant effect on Y in this linear regression model at 0.05 level.  
+Since there is only one predictor in this model, this is same as the test of the model. The F-value would be square root of the t-value. They are 496.409 and 495.798 respectively but this is likely due to rounding the values before the calculations are completed at the end.
+
+```{r}
+q7_b1+q7_b1_se*qt(.975, 60)
+q7_b1-q7_b1_se*qt(.975, 60)
+```
+h. estimated slope ± t(60,0.975)*standrard error of slope. (1.027719, 1.230593).
+
+```{r}
+q7_b0+85*q7_b1-qt(.975, 60)*sqrt(1236.1/60)*sqrt(1/62+(85-88.63)^2/(61*11.46^2))
+q7_b0+85*q7_b1+qt(.975, 60)*sqrt(1236.1/60)*sqrt(1/62+(85-88.63)^2/(61*11.46^2))
+```
+i. estimated coefficient+estimated slope*85 ± t(60,0.975)*sqrt(MSE)*sqrt(1/n+(85-sample mean of x)^2/Sxx).
+(79.13074, 81.55158)
+
+```{r}
+q7_b0+85*q7_b1-qt(.975, 60)*sqrt(q7_MSE)*sqrt(1+1/62+(85-88.63)^2/(61*11.46^2))
+q7_b0+85*q7_b1+qt(.975, 60)*sqrt(q7_MSE)*sqrt(1+1/62+(85-88.63)^2/(61*11.46^2))
+```
+j. estimated coefficient+estimated slope*85 ± t(60,0.975)*sqrt(MSE)*sqrt(1+1/n+(85-sample mean of x)^2/Sxx).
+(71.18167, 89.50066)
+
+## Question 11
+```{r}
+library(readxl)
+q11<-read_xlsx("husbands.xlsx")
+```
+
+```{r}
+cov(q11$남편키,q11$부인키)/sqrt(var(q11$남편키)*var(q11$부인키))
+```
+a. cov(X,Y)/sqrt(Var(X)*Var(Y)). 0.3644.
+
+```{r}
+q11$남편키_인치<-25.4*q11$남편키
+q11$부인키_인치<-25.4*q11$부인키
+cov(q11$남편키_인치,q11$부인키_인치)/sqrt(var(q11$남편키_인치)*var(q11$부인키_인치))
+```
+b. It will be the same, as they are converted with same scale, which will be cancelled out when I calculate the correlation coefficient. They are the same.
+
+c. It will be 1. They are perfectly correlated. Cov(X,X-130)=Cov(X,X)=Var(X), Var(X-130)=Var(X).
+
+d. We can take either of them as a dependet variable. So I will analyize both of them.
+
+
+```{r}
+library(tidyverse)
+q11<-q11%>%rename(heightsofhusbands=남편키, heightsofwives = 부인키)
+```
+
+```{r}
+plot(q11$heightsofwives,q11$heightsofhusbands)
+q11_lm1<-lm(q11$heightsofhusbands~q11$heightsofwives)
+summary(q11_lm1)
+q11_1_b1<-sum(((q11$heightsofwives-mean(q11$heightsofwives))*(q11$heightsofhusbands-mean(q11$heightsofhusbands))))/sum((q11$heightsofwives-mean(q11$heightsofwives))^2)
+q11_1_b0<-mean(q11$heightsofhusbands)-q11_1_b1*mean(q11$heightsofwives)
+q11_1_b1
+q11_1_b0
+q11_1_Rsq<-sum((q11_1_b0+q11_1_b1*q11$heightsofwives-mean(q11$heightsofhusbands))^2)/sum((q11$heightsofhusbands-mean(q11$heightsofhusbands))^2)
+q11_1_Rsq
+q11_1_MSE<-(1-q11_1_Rsq)*sum((q11$heightsofhusbands-mean(q11$heightsofhusbands))^2)/197
+q11_1_b1_se<-sqrt(q11_1_MSE/sum((q11$heightsofwives-mean(q11$heightsofwives))^2))
+q11_1_b1_se
+q11_1_b1/q11_1_b1_se #t-statistics
+qt(0.975, 197) #critical value
+q11_1_b1+q11_1_b1_se*qt(.975, 197)
+q11_1_b1-q11_1_b1_se*qt(.975, 197)
+```
+
+```{r}
+plot(q11$heightsofhusbands,q11$heightsofwives)
+q11_lm2<-lm(q11$heightsofwives~q11$heightsofhusbands)
+summary(q11_lm2)
+q11_2_b1<-sum(((q11$heightsofhusbands-mean(q11$heightsofhusbands))*(q11$heightsofwives-mean(q11$heightsofwives))))/sum((q11$heightsofhusbands-mean(q11$heightsofhusbands))^2)
+q11_2_b0<-mean(q11$heightsofwives)-q11_2_b1*mean(q11$heightsofhusbands)
+q11_2_b1
+q11_2_b0
+q11_2_Rsq<-sum((q11_2_b0+q11_2_b1*q11$heightsofhusbands-mean(q11$heightsofwives))^2)/sum((q11$heightsofwives-mean(q11$heightsofwives))^2)
+q11_2_Rsq
+q11_2_MSE<-(1-q11_2_Rsq)*sum((q11$heightsofwives-mean(q11$heightsofwives))^2)/197
+q11_2_b1_se<-sqrt(q11_2_MSE/sum((q11$heightsofhusbands-mean(q11$heightsofhusbands))^2))
+q11_2_b1_se
+q11_2_b1/q11_2_b1_se #t-statistics
+qt(0.975, 197) #critical value
+q11_2_b1+q11_2_b1_se*qt(.975, 197)
+q11_2_b1-q11_2_b1_se*qt(.975, 197)
+```
+
+
+e. for the model where heights of the husbands are a dependant variable, the model is Yhat = 1089.633+0.4012984X. 95% Confidence interval is (0.2572207, 0.5453761).  
+for the model the heights of the wives are a dependant variable, the model is Yhat = 1028.572+0.3309555X. 95% Confidence Interval is (0.212133, 0.4497781)
+
+f. The confidence invervals do not include 0. It is expected that the null hypotheses are rejected on the t-tests because 0 is not in the confidence levels at the level of 0.05, which means there is not statistically significant evidence to predict β1 as 0 at this level in each model.
+
+g. for the model where heights of the husbands are a dependant variable,  
+H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 197.  
+t-statistic = 5.492815>1.972079=critical value. Reject the null hypothesis. X has statistically significant effect on Y in this linear regression model at 0.05 level.  
+for the model where heights of the wives are a dependant variable,  
+H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 197.  
+t-statistic = 5.492815>1.972079=critical value. Reject the null hypothesis. X has statistically significant effect on Y in this linear regression model at 0.05 level.
+Same as the result of (f).
+
+
+## Question 12
+```{r}
+library(readxl)
+q12<-read_xlsx("가스사용.xlsx")
+library(tidyverse)
+q12<-q12%>%rename(heating_degree_days=난방도일, usageofgas=가스사용량)
+plot(q12$heating_degree_days, q12$usageofgas)
+q12_lm1<-lm(q12$usageofgas~q12$heating_degree_days)
+summary(q12_lm1)
+
+q12_1_b1<-sum(((q12$heating_degree_days-mean(q12$heating_degree_days))*(q12$usageofgas-mean(q12$usageofgas))))/sum((q12$heating_degree_days-mean(q12$heating_degree_days))^2)
+q12_1_b0<-mean(q12$usageofgas)-q12_1_b1*mean(q12$heating_degree_days)
+q12_1_b1
+q12_1_b0
+q12_1_Rsq<-sum((q12_1_b0+q12_1_b1*q12$heating_degree_days-mean(q12$usageofgas))^2)/sum((q12$usageofgas-mean(q12$usageofgas))^2)
+q12_1_Rsq
+q12_1_MSE<-(1-q12_1_Rsq)*sum((q12$usageofgas-mean(q12$usageofgas))^2)/7
+q12_1_b1_se<-sqrt(q12_1_MSE/sum((q12$heating_degree_days-mean(q12$heating_degree_days))^2))
+q12_1_b1_se
+
+q12_1_b1/q12_1_b1_se #t-statistics
+qt(0.95, 7) #critical value
+q12_1_b1+q12_1_b1_se*qt(.95, 7)
+q12_1_b1-q12_1_b1_se*qt(.95, 7)
+```
+a. Yhat = 1.23235+0.20221X
+
+b. H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 7.  
+t-statistic = 17.66272>1.894579=critical value. Reject the null hypothesis. X has statistically significant effect on Y in this linear regression model at 0.10 level.
+
+c. The confidence interval at 0.10 level is (0.1805214, 0.2239016).
+
+```{r}
+q12$usageofgas[4]<-85
+plot(q12$heating_degree_days, q12$usageofgas)
+q12_lm2<-lm(q12$usageofgas~q12$heating_degree_days)
+summary(q12_lm2)
+
+q12_2_b1<-sum(((q12$heating_degree_days-mean(q12$heating_degree_days))*(q12$usageofgas-mean(q12$usageofgas))))/sum((q12$heating_degree_days-mean(q12$heating_degree_days))^2)
+q12_2_b0<-mean(q12$usageofgas)-q12_2_b1*mean(q12$heating_degree_days)
+q12_2_b1
+q12_2_b0
+q12_2_Rsq<-sum((q12_2_b0+q12_2_b1*q12$heating_degree_days-mean(q12$usageofgas))^2)/sum((q12$usageofgas-mean(q12$usageofgas))^2)
+q12_2_Rsq
+q12_2_MSE<-(1-q12_2_Rsq)*sum((q12$usageofgas-mean(q12$usageofgas))^2)/7
+q12_2_b1_se<-sqrt(q12_2_MSE/sum((q12$heating_degree_days-mean(q12$heating_degree_days))^2))
+q12_2_b1_se
+
+q12_2_b1/q12_2_b1_se #t-statistics
+qt(0.95, 7) #critical value
+2*(1-pt(q12_2_b1/q12_2_b1_se, 7)) #p-value
+
+```
+
+e. Yhat = -7.2630+0.9911X
+f. 0.6524309.
+g. H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 7.  
+t-statistic 1.519029, p-value 0.1725522. Now, reject the null hypothesis at 0.10 level. X does not have statistically significant effect on Y in this linear regression model at 0.10 level.
+
+
+## Question 15
+```{r}
+library(readxl)
+q15<-read_xlsx("토플토익.xlsx")
+library(tidyverse)
+q15<-q15%>%rename(participants=수험자, toeflscore=토플점수, toeicscore=토익점수)
+plot(q15$toeflscore,q15$toeicscore)
+```
+
+a. There seems to be a linear relationship.
+
+```{r}
+cov(q15$toeflscore,q15$toeicscore)/sqrt(var(q15$toeflscore)*var(q15$toeicscore))
+```
+
+b. r(X,Y) = cov(X,Y)/sqrt(var(X)*var(Y)). 0.8136952.
+
+```{r}
+q15_lm1<-lm(q15$toeicscore~q15$toeflscore)
+summary(q15_lm1)
+
+q15_1_b1<-sum(((q15$toeflscore-mean(q15$toeflscore))*(q15$toeicscore-mean(q15$toeicscore))))/sum((q15$toeflscore-mean(q15$toeflscore))^2)
+q15_1_b0<-mean(q15$toeicscore)-q15_1_b1*mean(q15$toeflscore)
+q15_1_b1
+q15_1_b0
+q15_1_Rsq<-sum((q15_1_b0+q15_1_b1*q15$toeflscore-mean(q15$toeicscore))^2)/sum((q15$toeicscore-mean(q15$toeicscore))^2)
+q15_1_Rsq
+q15_1_MSE<-(1-q15_1_Rsq)*sum((q15$toeicscore-mean(q15$toeicscore))^2)/18
+q15_1_b1_se<-sqrt(q15_1_MSE/sum((q15$toeflscore-mean(q15$toeflscore))^2))
+q15_1_b1_se
+
+q15_1_b1/q15_1_b1_se #t-statistics
+qt(0.975, 18) #critical value
+2*(1-pt(q15_1_b1/q15_1_b1_se, 18)) #p-value
+
+```
+
+c. Yhat = 142.32+7.07X
+
+d. H0: β1=0, H1: β1≠0  
+under the null hypothesis, b1/se(b1) follows the t distribution with degrees of freedom 18.  
+t-statistic 5.939>2.100922=critical value. Reject the null hypothesis at 0.05 level. X has statistically significant effect on Y in this linear regression model at 0.05 level.
+
+e. R-squared = SSR/SSTO = 0.6621. 66.21% of the variance of toeic score is explained by the toefl scores in this linear regression model.
+
+
+
+```{r}
+q15_lm2<-lm(q15$toeflscore~q15$toeicscore)
+summary(q15_lm2)
+
+q15_2_b1<-sum(((q15$toeicscore-mean(q15$toeicscore))*(q15$toeflscore-mean(q15$toeflscore))))/sum((q15$toeicscore-mean(q15$toeicscore))^2)
+q15_2_b0<-mean(q15$toeflscore)-q15_2_b1*mean(q15$toeicscore)
+q15_2_b1
+q15_2_b0
+q15_2_Rsq<-sum((q15_2_b0+q15_2_b1*q15$toeicscore-mean(q15$toeflscore))^2)/sum((q15$toeflscore-mean(q15$toeflscore))^2)
+q15_2_Rsq
+q15_2_MSE<-(1-q15_2_Rsq)*sum((q15$toeflscore-mean(q15$toeflscore))^2)/18
+q15_2_b1_se<-sqrt(q15_2_MSE/sum((q15$toeicscore-mean(q15$toeicscore))^2))
+q15_2_b1_se
+
+q15_2_b1/q15_2_b1_se #t-statistics
+
+```
+
+f. Y = 13.31435 + 0.09366X. 첫 번째 식은 토플 점수에 따른 토익 점수 분포이고, 나중 식은 토익 점수에 따른 토플 점수 분포이므로 식이 서로 다를 수밖에 없다. 만점도 다르고 스케일도 다르기 때문이다. 또한 회귀분석에서 Y는 Random variable이지만 X는 아닌 것도 note해두어야 한다.
+
+
+
+
+
+

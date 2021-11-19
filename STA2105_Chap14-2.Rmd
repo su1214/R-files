@@ -1,0 +1,206 @@
+---
+title: "Chapter 14-2 Homework 2017121179 Seunghwan Kim"
+output:
+  html_document: default
+---
+
+# Question 18
+
+```{r}
+q18<-data.frame(matrix(c(35, 112, 35, 119, 35, 117, 35, 113,
+                         49.5, 108, 49.5, 99, 49.5, 112, 49.5, 118,
+                         70.0, 120, 70.0, 106, 70.0, 102, 70.0, 109,
+                         99.0, 110, 99.0, 101, 99.0, 99, 99.0, 104,
+                         140.0, 100, 140.0, 102, 140.0, 96, 140.0, 101),
+                        ncol=2, nrow=20, byrow=T,
+                        dimnames = list(NULL, c("Pressing pressure", "Tear factor"))))
+
+plot(Tear.factor~Pressing.pressure, q18)
+
+```
+
+a. 대체적으로 Pressing.pressure가 늘어날수록 Tear.factor가 감소하는 경향이 있다. 선형 관련성이 조금은 있어 보인다.
+
+```{r}
+q18_lm1<-lm(q18$Tear.factor~q18$Pressing.pressure)
+q18_lm1
+summary(q18_lm1)
+q18_1_b1<-sum(((q18$Pressing.pressure-mean(q18$Pressing.pressure))*(q18$Tear.factor-mean(q18$Tear.factor))))/sum((q18$Pressing.pressure-mean(q18$Pressing.pressure))^2)
+q18_1_b0<-mean(q18$Tear.factor)-q18_1_b1*mean(q18$Pressing.pressure)
+q18_1_b1
+q18_1_b0
+q18_1_Rsq<-sum((q18_1_b0+q18_1_b1*q18$Pressing.pressure-mean(q18$Tear.factor))^2)/sum((q18$Tear.factor-mean(q18$Tear.factor))^2)
+q18_1_Rsq
+plot(q18$Pressing.pressure, resid(q18_lm1), ylab = "residual", xlab = "Pressing pressure")
+abline(0,0)
+```
+
+b. Y = 118.1954 -0.1372X. plot shown as above.
+
+```{r}
+49.5/70.0
+70.0/99.0
+99.0/140
+```
+
+c. 모두 0.707의 비율을 가지고 있다.
+
+```{r}
+q18$LogPressing.pressure<-log(q18$Pressing.pressure)
+plot(Tear.factor~LogPressing.pressure, q18)
+```
+
+d. a에 비해서 x축을 중심으로 더 고르게 분포되어있음을 확인할 수 있다.
+
+```{r}
+q18_lm2<-lm(q18$Tear.factor~q18$LogPressing.pressure)
+q18_lm2
+summary(q18_lm2)
+q18_2_b1<-sum(((q18$LogPressing.pressure-mean(q18$LogPressing.pressure))*(q18$Tear.factor-mean(q18$Tear.factor))))/sum((q18$LogPressing.pressure-mean(q18$LogPressing.pressure))^2)
+q18_2_b0<-mean(q18$Tear.factor)-q18_2_b1*mean(q18$LogPressing.pressure)
+q18_2_b1
+q18_2_b0
+q18_2_Rsq<-sum((q18_2_b0+q18_2_b1*q18$LogPressing.pressure-mean(q18$Tear.factor))^2)/sum((q18$Tear.factor-mean(q18$Tear.factor))^2)
+q18_2_Rsq
+plot(q18$LogPressing.pressure, resid(q18_lm2), ylab = "residual", xlab = "Log Pressing pressure")
+abline(0,0)
+```
+
+e. Residual의 퍼짐이 X축을 기준으로 더 균일해졌다. 정규성이 더 확보되었다고 볼 수 있다.
+
+# Question 19
+
+```{r}
+library(readxl)
+q19<-read_xlsx("salmon.xlsx")
+plot(Recruits~Spawners, q19)
+```
+
+a. as above. Spawners와 Recruits사이에 선형 관계가 있어 보인다.
+
+```{r}
+q19<-subset.data.frame(q19, Year!=1951)
+q19<-subset.data.frame(q19, Year!=1955)
+plot(Recruits~Spawners,q19)
+```
+
+b. Spawners가 200보다 작은 outlier들이 제거되어 좀 더 선형성이 뚜렷해 보인다.
+
+```{r}
+q19_lm1<-lm(q19$Recruits~q19$Spawners)
+summary(q19_lm1)
+q19_1_b1<-sum(((q19$Spawners-mean(q19$Spawners))*(q19$Recruits-mean(q19$Recruits))))/sum((q19$Spawners-mean(q19$Spawners))^2)
+q19_1_b0<-mean(q19$Recruits)-q19_1_b1*mean(q19$Spawners)
+q19_1_b1
+q19_1_b0
+q19_1_Rsq<-sum((q19_1_b0+q19_1_b1*q19$Spawners-mean(q19$Recruits))^2)/sum((q19$Recruits-mean(q19$Recruits))^2)
+q19_1_Rsq
+plot(q19$Spawners, resid(q19_lm1), ylab = "residual", xlab = "Spawners")
+abline(0,0)
+```
+
+c. as above.
+
+```{r}
+q19$LogRecruitsSpawners<-log(q19$Recruits/q19$Spawners)
+q19_lm2<-lm(q19$LogRecruitsSpawners~q19$Spawners)
+summary(q19_lm2)
+q19_2_b1<-sum(((q19$Spawners-mean(q19$Spawners))*(q19$LogRecruitsSpawners-mean(q19$LogRecruitsSpawners))))/sum((q19$Spawners-mean(q19$Spawners))^2)
+q19_2_b0<-mean(q19$LogRecruitsSpawners)-q19_2_b1*mean(q19$Spawners)
+q19_2_b1
+q19_2_b0
+q19_2_Rsq<-sum((q19_2_b0+q19_2_b1*q19$Spawners-mean(q19$LogRecruitsSpawners))^2)/sum((q19$LogRecruitsSpawners-mean(q19$LogRecruitsSpawners))^2)
+q19_2_Rsq
+plot(q19$Spawners, resid(q19_lm2), ylab = "residual", xlab = "Log(Recruits/Spawners)")
+abline(0,0)
+```
+
+d. as above.
+
+e. 첫 번쨰 모델의 F-value는 6.623, R-squared는 0.2163으로 두 번째 모델의 F-value 4.124와 R-squared 0.1466과 비교하여 각각 높고 낮아 두 번째 모델보다 나은 면이 있지만, 두 번째 모델의 잔차도를 보면 분포가 -0.5와 0.5 사이로 -1000과 1500 사이보다 좁고, 분포가 0을 기준으로 좀 더 고른 면이 있어 두 번쨰 모델이 더 나은 점도 있다.
+
+# Question 20
+
+```{r}
+q20<-read_xlsx("음주단속.xlsx")
+colnames(q20)<-c("driver","beer","BAC")
+plot(BAC~beer, data=q20)
+```
+
+a. as above.
+
+```{r}
+q20_lm1<-lm(BAC~beer, data=q20)
+summary(q20_lm1)
+q20$BAC<-as.numeric(q20$BAC)
+q20_1_b1<-sum((q20$beer-mean(q20$beer))*(q20$BAC-mean(q20$BAC)))/sum((q20$beer-mean(q20$beer))^2)
+q20_1_b0<-mean(q20$BAC)-q20_1_b1*mean(q20$beer)
+q20_1_b1
+q20_1_b0
+q20_1_Rsq<-sum((q20_1_b0+q20_1_b1*q20$beer-mean(q20$BAC))^2)/sum((q20$BAC-mean(q20$BAC))^2)
+q20_1_Rsq
+```
+
+b. BAC = 0.015720 + 0.013227beer.
+
+c. R squared: 0.5, b1=0.13227, b0=0.15720, F-value=14, p-value=0.0021.
+```{r}
+q20_1_MSE<-(1-q20_1_Rsq)*sum((q20$BAC-mean(q20$BAC))^2)/14
+q20_1_b1_se<-sqrt(q20_1_MSE/sum((q20$beer-mean(q20$beer))^2))
+q20_1_b1_se
+q20_1_b1/q20_1_b1_se #t-statistics
+1-pt(q20_1_b1/q20_1_b1_se, 14) #critical value
+```
+
+d. H0: b1=<0, Ha: b1>0.
+p-value 0.001. (since it's right side test)
+Reject the null hypothesis at 0.05 level, or 0.01 level. 맥주를 더 마실수록 BAC가 증가하는지에 대한 유의적인 증거를 준다.
+
+```{r}
+plot(q20$beer, resid(q20_lm1), ylab = "residual", xlab = "beer")
+abline(0,0)
+0.10-(0.015720+0.013227*1)
+0.19-(0.015720+0.013227*9)
+```
+
+e. beer가 1인 경우와 9인 경우 각각 이례적인 관찰치이고, 각 관찰치에 대한 residual은 0.71, 0.55이다.
+
+```{r}
+plot(BAC~beer, data=q20)
+abline(q20_lm1)
+```
+
+f. 눈으로 봐도 회귀분석선에서 너무 멀리 떨어져 있다. 궁극적으로 영향을 미칠 것이다.
+
+```{r}
+q20<-subset.data.frame(q20, beer!=1)
+q20<-subset.data.frame(q20, beer!=9)
+q20_lm2<-lm(BAC~beer, data=q20)
+summary(q20_lm2)
+q20_2_b1<-sum((q20$beer-mean(q20$beer))*(q20$BAC-mean(q20$BAC)))/sum((q20$beer-mean(q20$beer))^2)
+q20_2_b0<-mean(q20$BAC)-q20_2_b1*mean(q20$beer)
+q20_2_b1
+q20_2_b0
+q20_2_Rsq<-sum((q20_2_b0+q20_2_b1*q20$beer-mean(q20$BAC))^2)/sum((q20$BAC-mean(q20$BAC))^2)
+q20_2_Rsq
+plot(q20$beer, resid(q20_lm2), ylab = "residual", xlab="beer")
+abline(0,0)
+
+plot(BAC~beer, data=q20)
+abline(q20_lm1, col="red")
+abline(q20_lm2, col="blue")
+```
+
+g. BAC = 0.002407+0.014124beer. 파란 선이 새로운 회귀식이다. 기존 모델에서 outliers로 인해 회귀식이 위로 치우쳐있었음을 알 수 있다.
+
+```{r}
+q20_2_MSE<-(1-q20_2_Rsq)*sum((q20$BAC-mean(q20$BAC))^2)/14
+q20_2_b1_se<-sqrt(q20_2_MSE/sum((q20$beer-mean(q20$beer))^2))
+q20_2_b1_se
+q20_2_b1/q20_2_b1_se #t-statistics
+1-pt(q20_2_b1/q20_2_b1_se, 14) #critical value
+```
+
+h. R-squared는 0.5에서 0.7031로 상승하였다. d와 같은 가설검정에서 p-value가 0.001에서 2.476742e-05로 바뀌어 매우 작아졌다. 그러나 0.05, 심지어 0.01 수준에서도 d의 가설검정 결과는 이상치에 심각한 영향을 받지 않는다. outlier를 제거한 뒤의 그래프와 비교했을 때 기울기의 차이가 크지 않은 점과 연관되어 있다.
+
+
