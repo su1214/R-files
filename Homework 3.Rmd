@@ -1,0 +1,70 @@
+---
+title: "Homework 3"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### \hfill [ECO s394D Summer 2021]{style="float:right"}
+
+##### \hfill [Steven Kim]{style="float:right"}
+
+##### \hfill [sk54923]{style="float:right"}
+
+### Question 1
+
+$$
+P(A) = 0.05 \\
+P(A^C) = 0.95 \\
+P(R|A) = 0.99 \\
+P(R|A^C) = 0.10
+$$
+
+$P(R) = P(R|A) \times P(A) + P(R|A^C) \times P(A^C) = 0.99 \times 0.05 + 0.10 \times 0.95 = $ `r 0.99*0.05 + 0.10*0.95`
+
+$ P(A|R) = \frac{P(R|A)P(A)}{P(R)} = \frac{0.99 \times 0.05}{0.99 \times 0.05 + 0.10 \times 0.95} = $ `r (0.99*0.05)/(0.99*0.05 + 0.10*0.95)`
+
+### Question 2
+
+```{r, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+q2 = tibble(
+  X = c(2,3,5),
+  P = c(1/10,1/10,8/10)
+)
+
+ggplot(q2, aes(X)) +
+  stat_ecdf(geom = "step") +
+  ylab("Probability") +
+  xlim(0,8)
+```
+$$
+\begin{align*}
+&P(2 < X ≤ 4.5) = P(X=3) = \frac{1}{10} \\
+&P(2 ≤ X < 4.5) = P(X=2) + P(X=3) = \frac{1}{10} + \frac{1}{10} = \frac{2}{10}
+\end{align*}
+$$
+
+### Question 3
+
+```{r}
+ggplot() +
+  xlim(0,1) +
+  ylim(0,1) +
+  stat_function(fun = function(x) { x - 1/3 },
+                geom = "line") +
+  stat_function(fun = function(x) { x + 1/3 },
+                geom = "line")
+
+
+```
+

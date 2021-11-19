@@ -1,0 +1,167 @@
+---
+title: "Homework 4"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### \hfill [ECO s394D Summer 2021]{style="float:right"}
+
+##### \hfill [Steven Kim]{style="float:right"}
+
+##### \hfill [sk54923]{style="float:right"}
+
+### Question 1
+
+```{r, include = FALSE}
+library(mosaic)
+library(ggplot2)
+```
+
+```{r}
+creatinine = read.csv("creatinine.csv", header=TRUE)
+
+lm1 = lm(creatclear~age, data=creatinine)
+coef(lm1)
+```
+
+#### (A)
+
+The creatinine clearance rate expected for a 55-year-old is $147.8129158 -0.6198159 \times 55 =$ `r 147.8129158 - 0.6198159*55`
+
+#### (B)
+
+Creatinine clearance rate declines by 0.6198 ml/minute per year as patients age.
+
+#### (C)
+
+For a 40-year-old, the expected creatinine clearance rate is $147.8129158 -0.6198159 \times 40 =$ `r 147.8129158 - 0.6198159*40` 135 - 123 = 12. This patient has a higher rate than the expected value for a 40-year-old.
+
+For a 60-year-old, the expected creatinine clearance rate is $147.8129158 -0.6198159 \times 60 =$ `r 147.8129158 - 0.6198159*60` 110 - 112 = -2. This patient has a lower rate than the expected value for a 40-year-old.
+
+Therefore, the 40-year-old is healthier for their age.
+
+\newpage
+
+### Question 2
+
+```{r, echo=FALSE, message = FALSE}
+s550 = read.csv("s550.csv")
+
+ggplot(s550) +
+  geom_point(aes(x = mileage, y = price)) +
+  facet_wrap(~year) +
+  scale_y_continuous(limits=c(0, 150000))
+```
+
+\newpage
+
+### Question 3
+
+```{r, echo = FALSE, message = FALSE, include=FALSE}
+greenbuildings = read.csv("greenbuildings.csv")
+greenbuildings = greenbuildings %>% 
+  filter(leasing_rate >= 10)
+
+greenbuildings %>%
+  group_by(green_rating) %>%
+  summarize(median(Rent),median(cluster_rent))
+```
+At first, I checked if I had the same median rents for green rated buildings and not green rated buildings as the guru. The median values were 25.0 and 27.6, matching his values.
+Next, as he only factored in "green rating," I picked three possible confounders: cluster rent, age and amenities.
+
+For cluster rent, the median values, 25.13 and 25.38 for non-green and green buildings respectively, seem to be similar to each other. This implies that green buildings are located pretty consistently throughout various clusters with different rent levels.
+
+However, there is a negative relation between the age of a building and the rent. The graph, with linear regression line, is below.
+
+```{r, echo = FALSE, message = FALSE, out.width = "60%"}
+ggplot(greenbuildings, aes(x=age,y=Rent)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+We can notice that as buildings age, their rents declines. This also reconciles with common sense. The problem is that green buildings tend to be newer. Below are faceted graphs, by green rating, representing the number of buildings of each age. It is easily noticeable that green buildings are significantly newer than non-green buildings. This implies that the higher rent associated with being a green building mgiht be because they are relatvely new, rather than because they are greener.
+
+
+```{r, echo = FALSE, message = FALSE, out.width = "60%"}
+ggplot(greenbuildings) +
+  geom_histogram(aes(x=age)) +
+  facet_wrap(~green_rating)
+```
+
+\newpage
+
+Similarly, buildings with amenities usually charge more rent to their tenants. To analyze this, I made a box plot of the ratio of the rent to cluster rent. From the graph, it can be noted that buildings with amenities tend to have higher rents than other buildings in the cluster.
+
+```{r, echo = FALSE, message = FALSE, out.width = "60%"}
+ggplot(greenbuildings) + 
+  geom_boxplot(aes(x=factor(amenities), y=Rent/cluster_rent))
+```
+
+Furthermore, there are more than twice of green buildings with than without amenities , contrast to there being similar numbers of non-green buildings with and without amenities. This would be another hidden factor contributing to the higher rent of green buildings.
+
+```{r, echo = FALSE, message = FALSE, out.width = "60%"}
+ggplot(greenbuildings) +
+  geom_bar(aes(x=amenities)) +
+  facet_wrap(~green_rating)
+```
+
+In short, it is possible that the green buildings have higher rents due to other qualities than being a green certified building. Therefore, making this building green does not guarantee higher future rents.
+
+
+\newpage
+
+### Question 4
+
+```{r}
+bikeshare = read.csv("bikeshare.csv")
+```
+
+1. Plot A
+
+```{r, message=FALSE}
+bikeshare1 = bikeshare %>% 
+  group_by(hr) %>%
+  summarize(average_count = mean(total))
+ggplot(bikeshare1) +
+  geom_line(aes(x = hr, y = average_count))
+```
+
+The X axis represents the hour of a day and the Y axis represents the average rental counts of by the hour. The number of rides spikes at around 7-8am and 5-6pm.
+
+\newpage
+
+2. Plot B
+
+```{r, message=FALSE}
+bikeshare2 = bikeshare %>% 
+  group_by(hr, workingday) %>%
+  summarize(average_count = mean(total))
+ggplot(bikeshare2) +
+  geom_line(aes(x = hr, y = average_count)) +
+  facet_wrap(~workingday)
+```
+
+The X axis represents the hour of a day and the Y axis represents the average rental counts of by the hour. The left panel shows the pattern of a non-working day and the right one represents that of a working day. In a working day, there is an apparent patter where people rents bikes at around 8am and 5-6pm which implies that it is likely that people are riding the bikes to commute. On a non-working day, the rideship gradually increases until around noon and starts to decline at around 4pm. There is no commute time pattern visible.
+
+\newpage
+
+3. Plot C
+
+```{r, message=FALSE}
+bikeshare3 = bikeshare %>% 
+  group_by(hr, workingday, weathersit) %>%
+  summarize(average_count = mean(total)) %>%
+  filter(hr == 8)
+ggplot(bikeshare3) +
+  geom_line(aes(x = weathersit, y = average_count)) +
+  facet_wrap(~workingday)
+```
+
+The X axis represents the weather the Y axis represents the average rental counts of by the weather. The left panel shows the pattern of a non-working day and the right one represents that of a working day. Both in working and non-working days, the rideship delines as weather gets tougher. That is, as it is difficult and unpleasant to ride bikes when the weather is not clear, people tend to rent less bikes. There is a swifter decline when the weathersit gets greater than 2. As 1 means clear sky, 2 means mist, and 3 means rain or snow, it makes sense that people ride much less bikes when it is raining or snow compared to when the sky is clear or there is just light mist. The deline looks much steep on a working day.
+
+

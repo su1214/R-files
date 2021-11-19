@@ -1,0 +1,251 @@
+---
+title: "Homework 2"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### \hfill [ECO s394D Summer 2021]{style="float:right"}
+
+##### \hfill [Steven Kim]{style="float:right"}
+
+##### \hfill [sk54923]{style="float:right"}
+
+### Question 1
+
+$$
+X \sim Uniform(0,1)
+\\ f_X(x) = \begin {cases} 1 ~~~~~ (0 < x \leq 1) \\ 1 ~~~~~ (otherwise) \end {cases}
+\\ F_X(x) = \begin {cases} 0 ~~~~~~~ (x \leq 0) \\ x ~~~~~~ (0 < x \leq 1) \\ 1 ~~~~~~~ (x > 1) \end {cases}
+$$
+
+#### (A)
+
+$$ P(X^2 \leq 0.25) = P(-0.5 \leq X \leq 0.5) = P(0 \leq X \leq 0.5) = 0.5 \times 1 = 0.5 $$
+
+#### (B)
+
+$$
+P(X^2 \leq a) = P(-\sqrt a \leq X \leq \sqrt a) = P(0 \leq X \leq \sqrt a)
+= \begin {cases}  0 ~~~~~~~ (~\sqrt a \leq 0) \\ \sqrt a ~~~~ (~0 < \sqrt a \leq 1) \\ 1 ~~~~~~~ (~\sqrt a > 1) \end {cases}
+$$
+
+#### (C)
+
+$$
+f_{Y}(y) = F_{Y}'(y) = \frac{1}{2\sqrt{y}} ~~ (if ~~~ 0 \leq y \leq 1,~ 0 ~ otherwise)
+$$
+
+#### (D)
+
+$$
+E(Y) = \int_{-\infty}^{\infty}yf_{Y}(y)dy
+     = \int_{0}^{1}yf_{Y}(y)dy 
+     = \int_{0}^{1}\frac{y}{2\sqrt{y}}dy 
+     = [\frac{1}{3}y^\frac{3}{2}]^{1}_{0}
+     = \frac{1}{3}
+$$
+
+```{=tex}
+\begin{align*}
+Var(Y) = \int_{-\infty}^{\infty}(y-E(Y))^2f_{Y}(y)dy
+       = \int_{0}^{1}(y-E(Y))^2f_{Y}(y)dy 
+     & = \int_{0}^{1}\frac{(y-\frac{1}{3})^2}{2\sqrt{y}}dy
+       \\
+     & = [\frac{\sqrt{y}(9y^2-10y+5)}{45}]^{1}_{0} = \frac{4}{45}
+\end{align*}
+```
+### Question 2
+
+$E([X−μ+μ−a]^2)= E([X−μ]^2+2[X−μ][μ-a]+[μ-a]^2)$
+
+$= E([X−μ]^2 + E(2[X−μ][μ-a]) + E([μ-a]^2)$
+
+$= E([X−μ]^2 + 2(μ-a)E(X−\mu) + E([μ-a]^2)$
+
+Since $E(X) = \mu$,
+
+$= E([X−μ]^2) + (μ-a)^2$
+
+$(\mu-a)^2 \geq 0$, $(\mu - a)^2 = 0$ when $\mu = a$.
+
+Therefore, $E([X-a]^2)$ is miniminzed when $a = \mu$.
+
+### Question 3
+
+We have $d$ independent standard normal random variables $Z_1,~ ...,~Z_d$ where each $Z_i \sim N(0,1)$. $X {\buildrel D \over =} Z_1^2 + \cdots + Z_d^2$. $X \sim \chi_d^2$.
+
+```{=tex}
+\begin{align*}
+E(X) & = E(Z_1^2 + \cdots + Z_d^2)
+\\
+     & = E(Z_1^2) ~ + \cdots + E(Z_d^2)
+\end{align*}
+```
+Since each $Z_i \sim N(0,1)$, $E(Z_i) = 0$ and $Var(Z_i) = E(Z_i^2) - E(Z_i)^2 = E(Z_i^2) =1$, $\forall i$.
+
+Therefore, $E(X) = 1 ~ + \cdots + 1 = d$.
+
+### Question 4
+
+Suppose that U is a random variable with a uniform distribution on $[0,1]$. Suppose that f is the PDF of some continuous random variable of interest, that F is the corresponding CDF, and assume that F is invertible.
+
+```{=tex}
+\begin{align*} 
+& U \sim Unif(0,1)
+\\
+&CDF: ~G_U(u) = u
+\\
+&PDF: g_U(u) = 1
+\\
+& X = F^{-1}(U)
+\end{align*}
+```
+I need to show that $X$ has a PDF $f(x)$. Because of the relation between a PDF and a CDF, it suffices to show $P(F^{−1}(U) ≤ x) = F(x)$.
+
+If $F^{−1}(U) ≤ x,$ then $U = F(F^{−1}(U)) ≤ F(x)$ because $F$ is a CDF and therefore it and its inverse $F^{-1}$ are non-decreasing functions.
+
+Also, since $F^{−1}(F(x)) = x$, if $U ≤ F(x)$, then $F^{−1}(U) ≤ x$.
+
+Therefore, $P(F^{−1}(U) ≤ x) = P(U \leq F(x)) = G_U(F(x)) = F(x)$.
+
+Hence, $X$ has a CDF that is $F(x)$, and a pdf that is $F'(x) = f(x)$.
+
+### Question 5
+
+#### (A)
+
+$X_N \sim Binomial (N,P)$ Let $\hat p_N = \frac{X_N}{N}$ denote the proportion of observed successes.
+
+$E(X_N) = NP$, $Var(X_N) = NP(1-P)$.
+
+$E(\hat p_N) = E(\frac{X_N}{N}) = \frac{1}{N} E(X_N) = \frac{NP}{N} = P$.
+
+$Var(\hat p_N) = Var(\frac{X_N}{N}) = \frac{1}{N^2}Var(X_N) = \frac{NP(1-P)}{N^2} = \frac{P(1-P)}{N}$.
+
+$sd(\hat p_N) = \sqrt{Var(\hat p_N)} = \sqrt{\frac{P(1-P)}{N}}$.
+
+#### (B)
+
+I decided to simulate 1000 realizations of the random variable $\hat p_5$, $P = 0.5$.
+
+Theoretically, $E(\hat p_5) = P = 0.5$ and $sd(\hat p_5) = \sqrt{\frac{0.5 \times 0.5}{5}}$ is `r sqrt(0.5*0.5/5)`.
+
+```{r, include=FALSE}
+library(mosaic)
+```
+
+```{r}
+N_sims = 1000
+P = 0.5
+N = 5
+x = rbinom(N_sims,N,P)
+phat_5=x/N
+
+mean(phat_5)
+sd(phat_5)
+```
+
+We can see that $E(\hat p_N) =$ `r mean(phat_5)` $\approx 0.5 = P$ and
+
+$sd(\hat p_5) =$ `r sd(phat_5)` $\approx$ `r sqrt(0.5*0.5/5)` $=\sqrt{\frac{0.5\times0.5}{5}}$
+
+#### (C)
+
+For $\hat p_{10}$,
+
+```{r}
+N_sims = 1000
+P = 0.5
+N = 10
+x = rbinom(N_sims,N,P)
+phat_10=x/N
+
+mean(phat_10)
+sd(phat_10)
+```
+
+$E(\hat p_{10}) =$ `r mean(phat_10)` $\approx 0.5 = P$ and
+
+$sd(\hat p_{10}) =$ `r sd(phat_10)` $\approx$ `r sqrt(0.5*0.5/10)` $=\sqrt{\frac{0.5\times0.5}{10}}$
+
+For $\hat p_{25}$,
+
+```{r}
+N_sims = 1000
+P = 0.5
+N = 25
+x = rbinom(N_sims,N,P)
+phat_25=x/N
+
+mean(phat_25)
+sd(phat_25)
+```
+
+$E(\hat p_{25}) =$ `r mean(phat_25)` $\approx 0.5 = P$ and
+
+$sd(\hat p_{25}) =$ `r sd(phat_25)` $\approx$ `r sqrt(0.5*0.5/25)` $=\sqrt{\frac{0.5\times0.5}{25}}$
+
+For $\hat p_{50}$,
+
+```{r}
+N_sims = 1000
+P = 0.5
+N = 50
+x = rbinom(N_sims,N,P)
+phat_50=x/N
+
+mean(phat_50)
+sd(phat_50)
+```
+
+$E(\hat p_{50}) =$ `r mean(phat_50)` $\approx 0.5 = P$ and
+
+$sd(\hat p_{50}) =$ `r sd(phat_50)` $\approx$ `r sqrt(0.5*0.5/50)` $=\sqrt{\frac{0.5\times0.5}{50}}$
+
+For $\hat p_{100}$,
+
+```{r}
+N_sims = 1000
+P = 0.5
+N = 100
+x = rbinom(N_sims,N,P)
+phat_100=x/N
+
+mean(phat_100)
+sd(phat_100)
+```
+
+$E(\hat p_{100}) =$ `r mean(phat_100)` $\approx 0.5 = P$ and
+
+$sd(\hat p_{100}) =$ `r sd(phat_100)` $\approx$ `r sqrt(0.5*0.5/100)` $=\sqrt{\frac{0.5\times0.5}{100}}$
+
+#### (D)
+
+(i.) the sample standard deviation of $\hat p_N$ versus $N$ for the five values of $N$ that I used in my simulations in parts B and C (bars)
+
+(ii.) the corresponding theoretical standard deviations versus N, calculated from my result in part A. (curve)
+
+```{r, include=FALSE}
+library(ggplot2)
+```
+
+```{r}
+df = tibble(
+        N = c(5,10,25,50,100),
+        sample_sd = c(sd(phat_5), sd(phat_10), sd(phat_25), sd(phat_50), sd(phat_100)), 
+        theoretical_sd = c(sqrt(0.5*0.5/5), sqrt(0.5*0.5/10), sqrt(0.5*0.5/25), sqrt(0.5*0.5/50), sqrt(0.5*0.5/100))
+         )
+
+ggplot(df) + 
+  geom_col(aes(x = N, y = sample_sd), color = "pink", fill = "pink") +
+  stat_function(fun=function(x) sqrt(P*(1-P)/x)) +
+  labs(y = "Standard Deviations")
+```
+
+In the graph above, the bars represent the values calculated from the simulations in B and C whereas the line denotes the theoretical standard deviations. Just as I saw at B and C that the actual standard deviations calculated from the simulations and the theoretical standard deviations calculated using the formula were approximately identical, the curve goes through the top points of the bars very close although there are some cases where it does not look exactly the same. It is because with 1000 trials, the values have come close to the theoretical ones. This is related to the Law of Large Numbers.

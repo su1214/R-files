@@ -1,0 +1,336 @@
+---
+title: "Homework 5"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  html_document: default
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### \hfill [ECO s394D Summer 2021]{style="float:right"}
+
+##### \hfill [Steven Kim]{style="float:right"}
+
+##### \hfill [sk54923]{style="float:right"}
+
+```{r, include=FALSE}
+library(tidyverse)
+library(mosaic)
+```
+
+
+### Question 1
+
+#### (A)
+
+$$
+se(\hat p) = se(\bar X_{N}) = \sqrt{\frac{p(1-p)}{N}}
+$$
+
+#### (B)
+
+$$
+\begin{aligned}
+& Var(\hat p - \hat q) = Var(\bar X_{N} - \bar Y_{M}) = Var(\bar X_{N}) + Var(\bar Y_{M}) 
+= \frac{p(1-p)}{N} + \frac{q(1-q)}{M}
+\\
+& se(\hat p - \hat q) = \sqrt{\frac{p(1-p)}{N} + \frac{q(1-q)}{M}}
+\end{aligned}
+$$
+
+
+#### (C)
+
+$$
+\begin{aligned}
+& P(event~|~Control~diet) = 97 / (1945+97) = 0.04750245 = \hat p \\
+& P(event~|~any~Med~Diet)  = (70+85) / (2097+2030+70+85) = 0.03619804 = \hat q
+\end{aligned}
+$$
+
+```{r}
+predimed = read.csv("predimed.csv", header=TRUE)
+xtabs(~group + event, data=predimed)
+```
+
+```{r}
+control_total = (1945+97)
+control_events = 97
+p_hat = control_events/control_total
+med_total = (2097+2030+70+85)
+med_events = 85+70
+q_hat = med_events/med_total
+```
+
+Plug-in standard error:
+
+$$
+\hat {se} (\hat p - \hat q) = \sqrt{\frac{\hat p(1-\hat p)}{N} + \frac{\hat q(1-\hat q)}{M}}
+$$
+
+```{r, include=FALSE}
+se_plugin = sqrt((p_hat*(1-p_hat))/control_total + (q_hat*(1-q_hat))/med_total)
+```
+
+It is `r se_plugin`.
+
+
+#### (D)
+
+The confidence interval using the plug-in method is $(\hat p - \hat q) ~\pm~ 1.96 \times \hat {se}(\hat p - \hat q)$ = (0.0005145781, 0.0220942425).
+
+```{r}
+predimed2 = mutate(predimed,
+                  meddiet = ifelse(group == 'Control', 'No', 'Yes'))
+```
+
+```{r}
+set.seed(90000)
+boot1 = do(1000)*{
+  # contruct a bootstrapped sample
+  predimed_boot = resample(predimed2)
+  # recalculate the statistics for the bootstrapped sample
+  table1_boot = predimed_boot %>%
+    group_by(meddiet) %>%
+    summarize(p_event = sum(event=='Yes')/n())
+  # return the result of interest
+  table1_boot$p_event
+}
+
+confint(boot1[,1]-boot1[,2], level=0.95)
+```
+
+The confidence interval using the bootstrap method is (0.0003954254, 0.02271635).
+
+They are very close to each other.
+
+#### (E)
+
+To obtain the p-value, construct the z-statistic:
+$\frac{(\hat p - \hat q) ~-~ 0}{\hat {se}(\hat p - \hat q)}$ = `r (p_hat - q_hat)/se_plugin`
+
+One-sided p-value is $P(Z > z~statistic~|~H_0) =$ `r pnorm((p_hat - q_hat)/se_plugin, lower.tail = FALSE)`
+
+\newpage
+
+### Question 2
+
+#### (A)
+
+$$
+\begin{aligned}
+& Var(\hat \Delta) = Var(\bar X_N  - \bar Y_M) = Var(\bar X_N) + Var(\bar Y_M) = \frac{\sigma_X^2}{N} + \frac{\sigma_Y^2}{M}
+\\
+& se(\hat \Delta) = se(\bar X_N  - \bar Y_M) = \sqrt{\frac{\sigma_X^2}{N} + \frac{\sigma_Y^2}{M}}
+\end{aligned}
+$$
+
+#### (B)
+
+
+```{r}
+gasprices = read.csv("GasPrices.csv", header=TRUE)
+xtabs(~Highway, data=gasprices)
+
+N = 22
+M = 79
+
+gasprices_by_highway = gasprices %>%
+  group_by(Highway) %>%
+  summarize(avg_price = mean(Price), var_price = var(Price))
+gasprices_by_highway
+
+Xbar = gasprices_by_highway$avg_price[2]
+Ybar = gasprices_by_highway$avg_price[1]
+sigma_X = gasprices_by_highway$var_price[2]
+sigma_Y = gasprices_by_highway$var_price[1]
+
+se2_plugin = sqrt(sigma_X/N + sigma_Y/M)
+
+c((Xbar - Ybar) - 1.96*se2_plugin, (Xbar - Ybar) + 1.96*se2_plugin)
+```
+
+The confidence interval using the plug-in method is (0.009329336, 0.082063069)
+
+```{r}
+set.seed(90000)
+boot2 = do(1000)*{
+  # contruct a bootstrapped sample
+  gasprices_boot = resample(gasprices)
+  # recalculate the statistics for the bootstrapped sample
+  table2_boot = gasprices_boot %>%
+    group_by(Highway) %>%
+    summarize(avg_price = mean(Price))
+  # return the result of interest
+  matrix(c(table2_boot$avg_price[2], table2_boot$avg_price[1]), ncol=2)
+}
+
+confint(boot2[,1]-boot2[,2], level=0.95)
+```
+
+The confidence interval using the bootstrap method is (0.009419492, 0.08384626).
+
+They are very close to each other.
+
+#### (C)
+
+To obtain the p-value, construct the z-statistic:
+$\frac{(\hat \Delta) ~-~ 0}{\hat {se}(\hat \Delta)}$ = `r ((Xbar - Ybar) - 0)/se2_plugin`
+
+One-sided p-value is $P(Z > z~statistic~|~H_0) =$ `r pnorm(((Xbar - Ybar) - 0)/se2_plugin, lower.tail = FALSE)`
+
+\newpage
+
+### Question 3
+
+#### (A)
+
+$$
+\begin{aligned}
+E(X_i) & = \sum_{x=1}^\infty \frac{\lambda^x}{x!}e^{-\lambda}x \\
+& = \sum_{x=1}^\infty \frac{\lambda^x}{(x-1)!}e^{-\lambda} \\
+& = \sum_{x=0}^\infty \frac{\lambda^{x+1}}{x!}e^{-\lambda} \\
+& = \lambda\sum_{x=0}^\infty \frac{\lambda^x}{x!}e^{-\lambda} \\
+& = \lambda e^\lambda e^{-\lambda} \\
+& = \lambda
+\\
+E(\bar X_N) & = E(\frac{1}{N}\sum_{i=1}^{N}X_i) \\
+& = \frac{1}{N}\sum_{i=1}^{N}E(X_i) \\
+& = \frac{1}{N} N \lambda \\
+& = \lambda
+\end{aligned}
+$$
+
+#### (B)
+
+$$
+\begin{aligned}
+Var(\bar X_N) & = Var(\frac{1}{N}\sum_{i=1}^{N}X_i) \\
+& = \frac{1}{N^2}Var(\sum_{i=1}^{N}X_i) \\
+& = \frac{1}{N^2}\sum_{i=1}^{N}Var(X_i) \\
+& = \frac{1}{N^2} N \lambda = \frac{\lambda}{N} \\
+se(\bar X_N) & = \sqrt{\frac{\lambda}{N}}
+\end{aligned}
+$$
+
+#### (C)
+
+$$
+\begin{aligned}
+X_i \sim f(X|\lambda) & = \frac{\lambda^x}{x!}e^{-\lambda} \\
+L(\lambda) & = \prod_{i=1}^N \frac{\lambda^{x_i}}{x_i!}e^{-\lambda} \\
+l(\lambda) &= \sum_{i=1}^N ({x_i} log {\lambda} -log{x_i!} {-\lambda}) \\
+\frac{\partial l}{\partial \lambda} & = \sum_{i=1}^N (\frac{1}{\lambda}x_i -1) 
+  =\frac{1}{\lambda}\sum_{i=1}^Nx_i - N = 0 \\
+\lambda & = \frac{\sum_{i=1}^Nx_i}{N} = \bar X_N
+\end{aligned}
+$$
+
+
+
+#### (D)
+
+make the dataframe: 
+```{r}
+count = c(12, 18, 15, 8,17, 13, 22, 13, 13, 13, 12, 11, 15, 15, 12,
+         8, 20, 12, 14, 11, 9, 15, 16, 20, 9, 15, 13, 19, 18, 14)
+
+maps = data.frame(count)
+
+m_bar = mean(maps$count)
+var_m = var(maps$count)
+maps_se = sqrt((m_bar / 30))
+
+c(m_bar - 1.96*(maps_se), m_bar + 1.96*(maps_se))
+```
+
+The confidence interval using the plug-in method is (12.72455, 15.40879).
+
+```{r}
+# bootstrap
+set.seed(90000)
+boot3 = do(1000)*{
+  # contruct a bootstrapped sample
+  maps_boot = resample(maps)
+  # recalculate the statistics for the bootstrapped sample
+  table3_boot = maps_boot %>%
+    summarize(avg_count = mean(count))
+  # return the result of interest
+  table3_boot$avg_count
+}
+
+confint(boot3[,1], level=0.95)
+```
+
+The confidence interval using the bootstrap method is (12.76667, 15.30083).
+
+Again, they are very close to each other.
+
+\newpage
+
+### Question 4
+
+#### (A)
+
+
+
+$$
+\begin{aligned}
+& \hat F_n(x) = \frac{\sum_{i=1}^n I(X_i \leq x)}{n} \\
+& \textrm{Let}~Z_i = I(X_i \leq x). \textrm{Then,}~Z_i~\textrm{takes values either}~0~\textrm{or}~1.\\
+& P(Z_i=1) = P(X_i \leq x) = F(x)\\
+& \textrm{Therefore},~ Z_i\sim Binomial(F(x))\\
+& E(Z_i)=F(x), ~Var(Z_i) = F(x) \times (1-F(x))\\
+& E(\hat F_n(x)) = E(\frac{\sum_{i=1}^n Z_i}{n}) = \frac{1}{n} \sum_{i=1}^n E(Z_i) 
+  = \frac{1}{n} \sum_{i=1}^n F(x) = \frac{1}{n} \times nF(x) = F(x)\\
+& Var(\hat F_n(x)) = Var(\frac{\sum_{i=1}^n Z_i}{n}) = \frac{1}{n^2} \sum_{i=1}^n Var(Z_i) 
+  = \frac{1}{n^2} \sum_{i=1}^n F(x)(1-F(x)) \\
+  & ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~= \frac{1}{n} \times nF(x)(1-F(x))
+  = \frac{F(x)(1-F(x))}{n}\\
+\end{aligned}
+$$
+
+
+#### (B)
+
+
+
+$$
+\begin{aligned}
+\textrm{For any fixed}~x,~E(\hat F_n(x)) = F(x)~\textrm{and}~Var(\hat F_n(x)) = \frac{F(x)(1-F(x))}{n}.
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\textrm{By Chebyshev's inequality, for every }& \epsilon > 0, \\
+P(|\hat F_n(x) - E(\hat F_n(x))| > \epsilon) &= \frac{Var(\hat F_n(x))}{\epsilon^2} \\
+P(|\hat F_n(x) - F_n(x)| > \epsilon) &= \frac{F(x)(1-F(x))}{n\epsilon^2} \\
+\textrm{Since} \lim_{n \rightarrow \infty} \frac{F(x)(1-F(x))}{n\epsilon^2} &= 0,\\
+P(|\hat F_n(x) - F_n(x)| > \epsilon) \longrightarrow 0 &~ \textrm{as}~n \rightarrow \infty
+\end{aligned}
+$$
+
+
+
+#### (C)
+
+A 95% normal-based confidence interval of the probability that the S&P 500 will lose 10% or more in a given year is (0.05521777, 0.19197324).
+
+
+```{r}
+stocks_bonds = read.csv('stocks_bonds.csv')
+
+cdf=ecdf(stocks_bonds$SP500)
+stocks = 89
+
+c(cdf(-0.1) -1.96*sqrt(cdf(-0.1)*(1-cdf(-0.1))/stocks), 
+  cdf(-0.1) +1.96*sqrt(cdf(-0.1)*(1-cdf(-0.1))/stocks))
+```
+
+
+
+
