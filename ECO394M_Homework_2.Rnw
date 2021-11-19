@@ -1,0 +1,217 @@
+\documentclass[letterpaper]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{relsize}
+\usepackage[margin = 0.25in]{geometry}
+\usepackage{Sweave}
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=1em,
+                                              frame=single}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=1em,
+                                             frame=single}
+\setkeys{Gin}{width=0.4\textwidth}
+
+\title{ECO 394M Homework 2}
+\author{Steven Kim}
+\date{}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+\input{homework2_123.tex}
+
+<<setup, echo= FALSE, include = FALSE>>=
+knitr::opts_chunk$set(out.width = ".4\\textwidth", fig.align = "center")
+
+if (!("librarian" %in% rownames(utils::installed.packages()))) {
+  install.packages("librarian")
+}
+
+librarian::shelf(
+  cran_repo = "https://cran.microsoft.com/", # Dallas, TX mirror
+  pryr,
+  rlang,
+  sandwich,
+  glue,
+  magrittr,
+  haven,
+  tidyverse,
+  mosaic,
+  olsrr
+)
+@
+
+\newpage
+\section*{Question 4}
+<<>>==
+source("nlcom.R")
+source("testnl.R")
+htv = read_dta('htv.dta')
+@
+
+  \begin{enumerate}[label=(\alph*)]
+    \item 
+<<>>==
+regr4_1 = lm(wage ~ abil + educ + exper + expersq, data = htv)
+summary(regr4_1)
+@
+\begin{enumerate}[label=\roman*.]
+\item \begin{center}
+<<fig=TRUE>>==
+print(ggplot(regr4_1) +
+  geom_point(aes(x=fitted(regr4_1), y=resid(regr4_1))) +
+  geom_hline(yintercept= 0, color = "red")
+  )
+@
+\end{center} It looks like there is a heteroskedasticity. The residuals are higher for higher fitted values.
+    \item 
+<<>>==
+regr4_2 = lm(resid(regr4_1)^2 ~ abil + educ + exper + expersq, data=htv)
+ols_test_f(regr4_2)
+@
+    Reject $H_0$. Homoskedasticity assumption is rejected.
+    \item 
+<<>>=
+nlcom(regr4_1, exper+2*expersq*5, level=0.90)
+@
+The 90\% confidence interval for the partial effect of \textbf{exper} at \textbf{exper} = 5 is (0.652808, 1.507076).
+    \item
+<<>>==
+AVAR4_1 = matrix(vcovHC(regr4_1, type='HC1'), ncol=5)
+  # Let a = [ 0 0 0 1 10 ]
+a = matrix(c(0,0,0,1,10), nrow=5)
+t(a) %*% AVAR4_1 %*% a %>% sqrt()
+@
+The standard error is 0.2596789.
+
+\end{enumerate}
+    \item
+<<>>=
+regr4_3 = lm(lwage ~ abil + educ + exper + expersq, data = htv)
+summary(regr4_3)
+@
+\begin{enumerate}[label=\roman*.]
+\item When \textbf{abil} increases by 1 unit, the log of wage would increase 
+by 0.054706, which implies the wage is expected to increase by 5.47\%.
+The slope of the \textbf{abil} decreased from 0.46499 to 0.054706.
+\item \begin{center}
+<<fig=TRUE, out.height="1.5\\textwidth">>==
+print(ggplot(regr4_3) +
+  geom_point(aes(x=fitted(regr4_3), y=resid(regr4_3))) +
+  geom_hline(yintercept= 0, color = "red")
+  )
+@
+\end{center} It looks like the residuals are fairly homoskedastic against 
+fitted values.
+\item
+<<>>=
+nlcom(regr4_3, exper+2*expersq*10, level=0.90)
+@
+(0.028159, 0.051212)
+\item
+<<>>=
+testnl(regr4_3, educ - (exper+2*expersq*5))
+testnl(regr4_3, educ - (exper+2*expersq*2))
+@
+p-values for the two tests are 0.0144 and 0.3905. We reject the null hypotheses in first case and do not reject the null 
+hypothesis in second case.
+\item
+<<>>=
+regr4_4 = lm(lwage ~ abil + log(educ) + exper + expersq, data = htv)
+summary(regr4_4)
+@
+10\% increase in education is expected to bring 13.43081\% increase in wage.
+\end{enumerate}
+    \item
+<<>>=
+regr4_5 = lm(lwage ~ educ + ne18 + nc18 + south18 + educ*ne18 + educ*nc18 + educ*south18, data = htv)
+summary(regr4_5)
+@
+\begin{enumerate}[label=\roman*.]
+\item Intercept: 0.944593 + 0.331869 = 1.276462. Slope: 0.111177 - 0.014665 = 0.096512
+\item
+<<>>=
+r = lm(lwage ~ educ, data= htv)
+anova(r, regr4_5)
+@
+The null hypothesis is that $\beta_{ne18} = \beta_{nc18} = \beta_{south18} = \beta_{educ*nc18} = \beta_{educ*south18} = \beta_{educ*ne18}$ = 0. The p-value is 0.001801.
+\item
+<<>>=
+testnl(regr4_5, `educ:ne18`, `educ:nc18`, `educ:south18`)
+@
+P-value is 0.5340. I am testing whether or not the partial effect of education on \textbf{lwage} depends on the region.
+\end{enumerate}
+    \item
+To determine the effects of parental characterstics and sociodemographics upon individual's wage, I would include \textbf{motheduc} and \textbf{fatheduc}.
+<<>>=
+regr4_6 = lm(log(wage) ~ motheduc + fatheduc + ne18 + nc18 + south18, data=htv)
+summary(regr4_6)
+cor(htv %>% select(educ, exper) %>% drop_na())
+@
+Both \textbf{motheduc} and \textbf{fatheduc} have very low p-value and have the value around 0.03. This implies that a unit increase in either mother's education or father's education would bring 3\% increase in wage. Inclusion of \textbf{educ} and \textbf{exper} would be bad in this context because it is very likely that a person with higher \textbf{motheduc} and \textbf{fatheduc} would also have more \textbf{educ} or \textbf{exper}. This would mask the effect of \textbf{motheduc} and \textbf{fatheduc}, which are statistically very significant.
+  \end{enumerate}
+
+\newpage
+\section*{Question 5}
+
+<<>>=
+bwght2 = read_dta('bwght2.dta')
+bwght2 = bwght2[bwght2$mwhte ==1,]
+regr5_1 = lm(bwght ~ meduc + mage + magesq + npvis + npvissq + cigs + drink, data=bwght2)
+summary(regr5_1)
+@
+
+  \begin{enumerate}[label=(\alph*)]
+    \item It implies that if \textbf{cigs} increases by 1 unit, \textbf{bwght} is expected to decrease by 10.6835751. Sure. It is probable to infer that smoking cigarettes during the pregnancy affected the birthweight of babies negatively, which is a detrimental signal of the baby's health.
+    \item 
+The p-value of \textbf{drink} is 0.68471. It is statistically insignificant at any conventional level.
+Maybe the correlation between drink and cigs.
+<<>>=
+cor(bwght2 %>% select(drink, cigs) %>% drop_na())
+@
+The correlation between drink and cigs is 0.18541, which is pretty high. Including both of them results in a multicolinearity problems.
+    \item
+<<>>=
+nlcom(regr5_1, `(Intercept)` + meduc*12 + mage*25 + magesq*625 + npvis*10 + npvissq*100 + cigs *0 + drink*0, 
+      level = 0.90)
+@
+The 90\% confidence interval is (3365.387579, 3445.153938). Realistically, it seems too narrow to contain 90\% of the babies' birthweights with this condition. It is probably because we only have 1624 observation and we took too many conditions.
+
+    \item The p-value of \textbf{npvis} is $0.02321>0.01$. It is not statistically significant at 1\% level. The p-value of \textbf{npvissq}is $0.25443>0.01$, also not statistically significant at 1\% level.
+<<>>=
+testnl(regr5_1, npvis, npvissq)
+@
+The p-value for this test is $0.0076<0.01$. Null hypothesis is rejected at 1\% level in this case.
+    \item $61.0842 -2*1.025*mage = 0$. At \textbf{mage} = \Sexpr{61.0842/(-2*regr5_1[["coefficients"]][["magesq"]])}, the partial effect switch from positive to negative.
+    \item 
+<<>>=
+nlcom(regr5_1, -mage/(2*magesq), level=0.95)
+@
+$(26.415071, 33.129160)$.
+    \item
+<<>>=
+set.seed(90000)
+turnpt_bt <- c()
+turnpt_bt = do(1000)*{
+  regr_boot = lm(bwght ~ meduc + mage + magesq + npvis + npvissq + cigs + drink, data=resample(bwght2))
+  -coef(regr_boot)[3]/(2*coef(regr_boot)[4])
+}
+confint(turnpt_bt, level=0.95)
+@
+$(22.23944, 36.28246)$.
+    \item
+<<>>=
+bwght2 = bwght2 %>% 
+  mutate(smoker = if_else(cigs > 0, 1, 0))
+regr5_2 = lm(bwght ~ meduc + mage + magesq + npvis + npvissq + cigs + drink + smoker, data=bwght2)
+summary(regr5_2)
+@
+\textbf{smoker} is statistically significant at 5\% level now but \textbf{sigs} is not anymore. This implies that whether or not a pregnant woman smokes is much more important that how much she smokes when it comes to \textbf{bwght}.
+  \end{enumerate}
+
+\end{document}
